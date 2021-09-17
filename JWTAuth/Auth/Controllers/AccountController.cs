@@ -21,8 +21,10 @@ namespace Auth.Controllers
         [HttpPost("/register")]
         public IActionResult RegisterUser(string username, string password)
         {
-            db.Users.Add(new Models.User{ Login = username, Password = password, Role = Role.User });
             
+            Console.WriteLine(username, password);
+            db.Users.Add(new Models.User{ Login = username, Password = password, Role = Role.User });
+            db.SaveChanges();
             return Ok("Ваша учетная запись зарегистрирована");
         }
 

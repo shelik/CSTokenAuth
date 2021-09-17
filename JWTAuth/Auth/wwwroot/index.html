@@ -3,25 +3,42 @@
 <head>
     <meta charset="utf-8" />
     <title>JWT в ASP.NET Core Web API</title>
+    <style>
+        .center { 
+            text-align: center;
+            display: block;
+        }
+        input{
+            margin-top: 1em;
+            width: 20%;
+        }
+        
+    </style>
+        
 </head>
 <body>
-    <div id="userInfo" style="display:none;">
-        <p>Вы вошли как: <span id="userName"></span></p>
-        <input type="button" value="Выйти" id="logOut" />
-    </div>
-    <div id="loginForm">
-        <h3>Вход на сайт</h3>
-        <label>Введите email</label><br />
-        <input type="email" id="emailLogin" /> <br /><br />
-        <label>Введите пароль</label><br />
-        <input type="password" id="passwordLogin" /><br /><br />
-        <input type="submit" id="submitLogin" value="Логин" />
-    </div>
-    <div>
-        <input type="submit" id="getDataByLogin" value="Данные по логину" />
-    </div>
-    <div>
-        <input type="submit" id="getDataByRole" value="Данные по роли" />
+    <div class="center">
+        <div id="userInfo" style="display:none;" class="center"
+            <p>Вы вошли как: <span id="userName"></span></p>
+            <input type="button" value="Выйти" id="logOut" />
+        </div>
+        <div id="loginForm" class="center">
+            <h3>Вход на сайт</h3>
+            <label>Введите email</label><br />
+            <input type="email" id="emailLogin" /> <br /><br />
+            <label>Введите пароль</label><br />
+            <input type="password" id="passwordLogin" /><br /><br />
+            <input type="submit" id="submitLogin" value="Логин" />
+        </div>
+        <div>
+            <input  type="submit" id="register" value="Зарегистрировать" />
+        </div>
+        <div>
+            <input  type="submit" id="getDataByLogin" value="Данные по логину" />
+        </div>
+        <div>
+            <input type="submit" id="getDataByRole" value="Данные по роли" />
+        </div>
     </div>
  
     <script>
@@ -61,6 +78,30 @@
                 console.log("Error: ", response.status, data.errorText);
             }
         };
+        async function regAsync() {
+ 
+            // получаем данные формы и фомируем объект для отправки
+            const formData = new FormData();
+            formData.append("grant_type", "password");
+            formData.append("username", document.getElementById("emailLogin").value);
+            formData.append("password", document.getElementById("passwordLogin").value);
+ 
+            // отправляет запрос и получаем ответ
+            const response = await fetch("/register", {
+                method: "POST",
+                headers: {"Accept": "application/json"},
+                body: formData
+            });
+ 
+            // если регистрация прошла нормально
+            if (response.ok === true) {
+                 
+                 const data = await response.json();
+                 alert(data)
+             }
+             else
+                 console.log("Status: ", response.status);
+        };
         // отправка запроса к контроллеру ValuesController
         async function getData(url) {
             const token = sessionStorage.getItem(tokenKey);
@@ -81,12 +122,20 @@
                 console.log("Status: ", response.status);
         };
  
+        //регсистрация
+        document.getElementById("register").addEventListener("click", e => {
+ 
+            e.preventDefault();
+            regAsync();
+        });
+
         // получаем токен
         document.getElementById("submitLogin").addEventListener("click", e => {
  
             e.preventDefault();
             getTokenAsync();
         });
+
  
         // условный выход - просто удаляем токен и меняем видимость блоков
         document.getElementById("logOut").addEventListener("click", e => {
