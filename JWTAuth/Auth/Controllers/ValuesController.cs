@@ -7,6 +7,12 @@ namespace Auth.Controllers
     [Route("api/[controller]")]
     public class ValuesController : Controller
     {
+        private Models.ApplicationContext context {get; set;}
+
+        public ValuesController(Models.ApplicationContext ctx)
+        {
+            context = ctx;
+        }
         [Authorize]
         [Route("getlogin")]
         public IActionResult GetLogin()
@@ -14,7 +20,7 @@ namespace Auth.Controllers
             return Ok($"Ваш логин: {User.Identity.Name}");
         }
          
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Route("getrole")]
         public IActionResult GetRole()
         {

@@ -12,12 +12,20 @@ namespace Auth.Controllers
     public class AccountController : Controller
     {
         // тестовые данные вместо использования базы данных
-        private List<User> people = new List<User>
+        ApplicationContext db;
+        public AccountController(ApplicationContext context)
         {
-            new User {Login="admin@gmail.com", Password="12345", Role = "admin" },
-            new User { Login="qwerty@gmail.com", Password="55555", Role = "user" }
-        };
- 
+            db = context;
+        }
+
+        [HttpPost("/register")]
+        public IActionResult RegisterUser(string username, string password)
+        {
+            db.Users.Add(new Models.User{ Login = username, Password = password, Role = Role.User });
+            
+            return Ok("Ваша учетная запись зарегистрирована");
+        }
+
         [HttpPost("/token")]
         public IActionResult Token(string username, string password)
         {
@@ -49,13 +57,13 @@ namespace Auth.Controllers
  
         private ClaimsIdentity GetIdentity(string username, string password)
         {
-            User user = people.FirstOrDefault(x => x.Login == username && x.Password == password);
+            User user = db.Users.FirstOrDefault(x => x.Login == username && x.Password == password);
             if (user != null)
             {
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
-                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role)
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString())
                 };
                 ClaimsIdentity claimsIdentity =
                 new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
