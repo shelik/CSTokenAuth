@@ -37,13 +37,14 @@ namespace Auth.Controllers
             }
 
             var now = DateTime.UtcNow;
+            int lifitime = role == Role.Admin?AuthOptions.LIFETIMEADMIN:AuthOptions.LIFETIMEUSER;
             // создаем JWT-токен
             var jwt = new JwtSecurityToken(
                     issuer: AuthOptions.ISSUER,
                     audience: AuthOptions.AUDIENCE,
                     notBefore: now,
                     claims: identity.Claims,
-                    expires: now.Add(TimeSpan.FromMinutes((role == Role.Admin)?AuthOptions.LIFETIMEADMIN:AuthOptions.LIFETIMEUSER)),
+                    expires: now.Add(TimeSpan.FromSeconds(lifitime)),
                     signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
  
@@ -71,7 +72,7 @@ namespace Auth.Controllers
                 
                 new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
                     ClaimsIdentity.DefaultRoleClaimType);
-                return claimsIdentity;
+                return (claimsIdentity, user.Role);
             }
  
             // если пользователя не найдено
