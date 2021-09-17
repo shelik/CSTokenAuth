@@ -23,19 +23,19 @@ namespace Auth.Controllers
         {
             db.Users.Add(new Models.User{ Login = username, Password = password, Role = Role.User });
             db.SaveChanges();
-            
+
             return Ok("Ваша учетная запись зарегистрирована");
         }
 
         [HttpPost("/token")]
         public IActionResult Token(string username, string password)
         {
-            var identity = GetIdentity(username, password);
+            var (identity, role) = GetIdentity(username, password);
             if (identity == null)
             {
                 return BadRequest(new { errorText = "Invalid username or password." });
             }
- 
+
             var now = DateTime.UtcNow;
             // создаем JWT-токен
             var jwt = new JwtSecurityToken(
@@ -43,7 +43,7 @@ namespace Auth.Controllers
                     audience: AuthOptions.AUDIENCE,
                     notBefore: now,
                     claims: identity.Claims,
-                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
+                    expires: now.Add(TimeSpan.FromMinutes((role == Role.Admin)?AuthOptions.LIFETIMEADMIN:AuthOptions.LIFETIMEUSER)),
                     signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
  
@@ -56,7 +56,7 @@ namespace Auth.Controllers
             return Json(response);
         }
  
-        private ClaimsIdentity GetIdentity(string username, string password)
+        private (ClaimsIdentity, Role) GetIdentity(string username, string password)
         {
             User user = db.Users.FirstOrDefault(x => x.Login == username && x.Password == password);
             if (user != null)
@@ -66,14 +66,16 @@ namespace Auth.Controllers
                     new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
                     new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString())
                 };
+                
                 ClaimsIdentity claimsIdentity =
+                
                 new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
                     ClaimsIdentity.DefaultRoleClaimType);
                 return claimsIdentity;
             }
  
             // если пользователя не найдено
-            return null;
+            return (null, Role.User);
         }
     }
 }
