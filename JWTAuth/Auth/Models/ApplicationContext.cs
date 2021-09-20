@@ -9,10 +9,7 @@ namespace Auth.Models
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
         {
-            // Console.WriteLine("Rere");
             Database.EnsureCreated();   // создаем базу данных при первом обращении
         }
-        // protected override void OnConfiguring(DbContextOptionsBuilder options)
-        //     => options.UseSqlite("Data Source=DBFileName.db");
     }
 }

@@ -20,15 +20,23 @@ namespace Auth
         public void ConfigureServices(IServiceCollection services)
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
-            Console.WriteLine(connection);
             services.AddDbContext<ApplicationContext>(options =>
                 options.UseSqlite(connection));
+
+            bool CustomLifetimeValidator(DateTime? notBefore, DateTime? expires, SecurityToken tokenToValidate, TokenValidationParameters @param)
+            {
+                Console.WriteLine("Validation");
+                if (expires != null)
+                {
+                    return expires > DateTime.UtcNow;
+                }
+                return false;
+            }    
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
                     {
                         options.RequireHttpsMetadata = false;
-                        Console.WriteLine(TimeSpan.FromSeconds(5));
                         options.TokenValidationParameters = new TokenValidationParameters
                         {
                             // укзывает, будет ли валидироваться издатель при валидации токена
@@ -42,6 +50,9 @@ namespace Auth
                             ValidAudience = AuthOptions.AUDIENCE,
                             // будет ли валидироваться время существования
                             ValidateLifetime = true,
+
+                            LifetimeValidator = CustomLifetimeValidator,
+                            RequireExpirationTime = true,
                             
                             // установка ключа безопасности
                             IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),

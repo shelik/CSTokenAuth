@@ -37,7 +37,9 @@ namespace Auth.Controllers
             }
 
             var now = DateTime.UtcNow;
+            
             int lifitime = role == Role.Admin?AuthOptions.LIFETIMEADMIN:AuthOptions.LIFETIMEUSER;
+            
             // создаем JWT-токен
             var jwt = new JwtSecurityToken(
                     issuer: AuthOptions.ISSUER,
